@@ -1,5 +1,6 @@
 import Booking from "../schemas/bookingSchema.js";
 import Vehicle from "../schemas/vehicleSchema.js";
+import Invoice from "../schemas/invoiceSchema.js";
 
 /* export const createBooking = async (req, res) => {
 
@@ -53,7 +54,7 @@ import Vehicle from "../schemas/vehicleSchema.js";
 
 export const createBooking = async (req, res) => {
     try {
-        const { customerId, vehicleId, pickUpTime, dropTime, PaymentMethod } = req.body;
+        const { userId, customerId, vehicleId, pickUpTime, totalPrice, PaymentMethod } = req.body;
         const vehicle = await Vehicle.findById(vehicleId);
 
         if (!vehicle) {
@@ -76,14 +77,15 @@ export const createBooking = async (req, res) => {
 
 
         const booking = new Booking({
+            userId,
             customerId,
             vehicleId,
             pickUpTime,
-            dropTime,
+           // dropTime,
             PaymentMethod,
             bookingStatus: 'Pending',
             paymentStatus: 'Pending',
-            //totalPrice
+            totalPrice
         });
 
 
@@ -102,16 +104,16 @@ export const createBooking = async (req, res) => {
 
         res.status(201).json({
             message: "Booking created successfully",
-            booking
+            booking: responseBooking
         });
     } catch (error) {
-        res.status(500).json({ message: "Internal Server Error", error: error.message,  booking: responseBooking });
+        res.status(500).json({ message: "Internal Server Error", error: error.message });
     }
 };
 
 export const getAllBooking = async (req, res) => {
     try {
-        const bookings = await Booking.find().populate('vehicle customer');
+        const bookings = await Booking.find().populate('vehicleId customerId');
         res.send(bookings)
     } catch (error) {
         res.status(500).send(error.message);
@@ -120,7 +122,7 @@ export const getAllBooking = async (req, res) => {
 
 export const getBookingById = async (req, res) => {
     try {
-        const booking = await Booking.findById(req.params.id).populate('vehicle customer');
+        const booking = await Booking.findById(req.params.id).populate('vehicleId customerId');
         if (!booking) {
             return res.status(404).send('Booking not found');
         }
@@ -181,10 +183,31 @@ export const completeBooking = async (req, res) => {
         }
 
         const totalPrice = booking.vehicleId.minCharge + (booking.vehicleId.chargePerHour * durationInHours);
+        
+        const totalAmount = totalPrice
+        const PaymentMethod = booking.PaymentMethod || 'Unknown';
+//create Invoice
+        const invoice = new Invoice({
+            invoiceId: `INV-${Date.now()}`,
+            userId: booking.userId,
+            customerId: booking.customerId,
+            bookingId: booking._id,
+            vehicleId: booking.vehicleId._id,
+            charges: [
+                { description: 'Base Charge', amount: booking.vehicleId.minCharge },
+                { description: 'Hourly Charge', amount: booking.vehicleId.chargePerHour }
+            ],
+            totalAmount ,
+            PaymentMethod,//: booking.PaymentMethod || 'Unknown', 
+            paymentStatus: booking.paymentStatus || 'Pending' 
+        });
+
+        await invoice.save();
 
         res.status(200).json({
-            message: "Booking completed successfully", totalPrice,
-            booking: booking.toObject() 
+            message: "Booking completed and invoice is created successfully",  
+            totalAmount: totalPrice, 
+            booking: booking.toObject(), invoice 
         });
     } catch (error) {
         return res.status(400).send(error.message);

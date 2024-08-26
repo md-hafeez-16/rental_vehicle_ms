@@ -7,6 +7,10 @@ const vehicleSchema = new mongoose.Schema({
             enum: ['bike', 'car', 'scooter'],
             required: true
         },
+        numberOfSeats: {
+            type: Number,
+            required: true
+        },
         brand: {
             type: String,
             required: true

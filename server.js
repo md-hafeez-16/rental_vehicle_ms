@@ -7,12 +7,18 @@ import dotenv from "dotenv";
 import https from "https";
 import express from "express";
 dotenv.config();
+
 const port = process.env.PORT || 4000;
+
 const app = express();
+
 app.use(bodyParser.json({ extended: true }));
 app.use(bodyParser.urlencoded({ extended: true }));
+
 mongooseConnection();
+
 const corsOrigin = ["http://localhost:5173", "http://20.192.28.44"];
+
 app.use(
     cors({
         origin: "*",

@@ -13,13 +13,17 @@ const userSchema = new mongoose.Schema({
     },
     age: {
         type: Number,
-        required: true
+        required: true,
+        min: [18, 'Age should not be less than 18']
     },
+
     mobileNumber: {
         type: String,
         required: true,
-        match: [/^\d{10}$/, 'Mobile number must be exactly 10 digits']
+        match: [/^[6-9]\d{9}$/, 'Mobile number must start with 6 or above and be exactly 10 digits long'],
+        unique: true
     },
+
     email: {
         type: String,
         required: true,
@@ -28,9 +32,9 @@ const userSchema = new mongoose.Schema({
     password: {
         type: String,
         required: true,
-        match: [/^[a-zA-Z0-9]+$/, 'Password must be alphanumeric (letters and numbers only).']
-
+        match: [/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d]{8,}$/, 'Password must be at least 8 characters long and should be alpha numeric.']
     },
+
     role: {
         type: String,
         enum: ['admin', 'customer'],

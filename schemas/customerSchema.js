@@ -3,19 +3,20 @@ import mongoose from "mongoose";
 const customerSchema = new mongoose.Schema({
     userId: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: 'User'
+        ref: 'userId'
     },
     aadharNumber: {
         type: String,
         required: true,
         unique: true,
-        match: [/^\d{12}$/, 'Aadhar number must be exactly 12 digits']
+        match: [/^[2-9]\d{11}$/, 'Aadhar number must be exactly 12 digits long and must not start with 0 or 1']
     },
+
     panCard: {
         type: String,
         required: true,
         unique: true,
-        match: [/^[A-Z]{5}\d{4}[A-Z]$/, 'PAN card must have 10 characters: 5 alphabets, 4 numbers, and 1 alphabet']
+        match: [/^[A-Z]{5}\d{4}[A-Z]$/, 'PAN card must have 10 characters: 5 alphabets, 4 numbers, and 1 alphabet eg., ABCDE1234F']
     },
     DL: {
         type: String,
